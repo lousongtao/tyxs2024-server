@@ -1,9 +1,9 @@
 package com.jslink.wc.service;
 
-import com.jslink.wc.pojo.Area;
-import com.jslink.wc.pojo.Dict;
-import com.jslink.wc.repository.AreaRepository;
-import com.jslink.wc.repository.DictRepository;
+import com.jslink.wc.exception.ForbiddenException;
+import com.jslink.wc.pojo.*;
+import com.jslink.wc.repository.*;
+import com.jslink.wc.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,6 +28,12 @@ public class CommonServiceImpl implements CommonService{
     private AreaRepository areaRepository;
     @Autowired
     private DictRepository dictRepository;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private WorksRepository worksRepository;
+    @Autowired
+    private OrgTypeRepository orgTypeRepository;
     @Override
     public List<Area> getAreas() {
         return areaRepository.findAll();
@@ -38,6 +44,11 @@ public class CommonServiceImpl implements CommonService{
         if (file.isEmpty()){
             throw new IOException("Empty file exception");
         }
+//        System.setProperty("sun.jnu.encoding", "utf-8");//保证中文名路径可以操作
+        //文件名包含中文字符时, 在Linux上会报错
+//        String[] segs = file.getOriginalFilename().split("\\.");
+//        String extend = "." + segs[segs.length - 1];
+
         Path target = Paths.get(savepath + "/" + System.currentTimeMillis() + "/" + file.getOriginalFilename());
         Files.createDirectories(target.getParent());
         Files.createFile(target);
@@ -47,8 +58,19 @@ public class CommonServiceImpl implements CommonService{
         return target.toFile().getAbsolutePath();
     }
 
+    /**
+     * 删除文件时, 如果该文件已经被某个作品使用, 要清除这个作品的字段
+     * 文件删除后, 如果该目录已空, 把目录也删除掉
+     * @param filePath
+     * @return
+     */
     @Override
     public String deleteFile(String filePath) {
+        List<Works> works = worksRepository.findByFileUrl(filePath);
+        works.forEach(w -> {
+            w.setFileUrl(null);
+            worksRepository.save(w);
+        });
         File file = new File(filePath);
         if (file.exists()){
             file.delete();
@@ -66,7 +88,10 @@ public class CommonServiceImpl implements CommonService{
     }
 
     @Override
-    public void saveDict(String type, String value) {
+    public void saveDict(String user, String type, String value) {
+        Account account = accountRepository.findByAccount(user);
+        if (account.getType() != Constants.ACCOUNT_TYPE_ADMIN)
+            throw new ForbiddenException("没有权限");
         List<Dict> dicts = dictRepository.findAll();
         for(Dict dict : dicts){
             if (dict.getType().equals(type)){
@@ -74,5 +99,10 @@ public class CommonServiceImpl implements CommonService{
                 dictRepository.save(dict);
             }
         }
+    }
+
+    @Override
+    public List<OrgType> getOrgType() {
+        return orgTypeRepository.findAll();
     }
 }

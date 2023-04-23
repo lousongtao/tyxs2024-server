@@ -1,18 +1,30 @@
 package com.jslink.wc.requestbody;
 
+import com.jslink.wc.util.Constants;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
 public class AddWorkBody {
-    private String poster;
-    private Integer street;
-    private String intro;
-    private String phone;
+    private Integer id;
     private String title;
-    private String type; //音频类 视频类 图文类
-//    private String cover;
-//    private String[] attachments;
-    private List<MediaBody> medias;
+    private String poster;
+    private String phone;
+    private Integer type;
+    private Date createDate;
+    private Byte status;
+    private String intro;
+    private Date mediaPlayDate;
+    private Integer mediaPlayTimes;
+    private String mediaLink;
+    private String mediaName;
+    private String subMediaName;
+    private String fileUrl;
+    private String vendor;
+    private String projectBrief;
+    private String projectDesc;
+    private List<PrizeBody> prizeList;
+    private List<SubsidizeBody> subsidizeList;
 }

@@ -1,11 +1,11 @@
 package com.jslink.wc.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jslink.wc.util.Constants;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @Data
 @Table(name = "works")
@@ -13,34 +13,48 @@ import java.util.List;
 public class Works {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
+    @Column
+    private String title;
+    @Column
+    private String poster;
+    @Column
+    private String phone;
+    @Column
+    private Integer type;
     @Column
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
     @Column
-    private String poster;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updateDate;
     @Column
-    private String title;
-//    @Column
-//    private Integer street;
-    @Column
-    private Byte status = Constants.WORKS_STATUS_NOAUDIT;
+    private Byte status = Constants.WORKS_STATUS_DRAFT;
     @Column
     private String intro;
     @Column
-    private String phone;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date mediaPlayDate;
     @Column
-    private String type;
-//    @OneToOne
-//    @JoinColumn(name = "workscover_id", referencedColumnName = "id")
-//    private WorksCover worksCover;
-//    @OneToMany
-//    @JoinColumn(name = "works_id", referencedColumnName = "id")
-//    private List<WorksAttachment> worksAttachments;
-//    @OneToMany
-//    @JoinColumn(name = "works_id")
-//    private List<WorksComment> worksComments;
-    @OneToMany
-    @JoinColumn(name = "works_id")
-    private List<Media> medias;
+    private Integer mediaPlayTimes;
+    @Column
+    private String mediaLink;
+    @Column
+    private String mediaName;
+    @Column
+    private String subMediaName;
+    @Column
+    private String fileUrl;
+    @Column
+    private String reccFormFileUrl;//推荐表保存的位置
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
+    @Column
+    private String projectBrief;
+    @Column
+    private String projectDesc;
+    @Column
+    private String vendor;
 }

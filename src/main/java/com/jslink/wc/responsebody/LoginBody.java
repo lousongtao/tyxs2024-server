@@ -10,5 +10,6 @@ public class LoginBody {
     private String status = STATUS_OK;
     private String type;
     private String currentAuthority;
-
+    private String username;
+    private String password;
 }

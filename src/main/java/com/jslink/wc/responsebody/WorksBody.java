@@ -1,6 +1,8 @@
 package com.jslink.wc.responsebody;
 
-import com.jslink.wc.requestbody.MediaBody;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.jslink.wc.pojo.WorksPrize;
+import com.jslink.wc.pojo.WorksSubsidize;
 import lombok.Data;
 
 import java.util.Date;
@@ -8,18 +10,26 @@ import java.util.List;
 
 @Data
 public class WorksBody {
-    private int id;
+    private Integer id;
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date createDate;
     private String poster;
     private String title;
-//    private String street;
-//    private String area;
+    private Byte status;
     private String intro;
     private String phone;
-    private String type;
-    private List<MediaBody> medias;
-//    private int status;
-//    private String coverPath;
-//    private List<String> attachmentsPath = new ArrayList<>();
-//    private List<CommentBody> comments = new ArrayList<>();
+    private Integer type;
+    @JsonFormat(pattern="yyyy-MM-dd")
+    private Date mediaPlayDate;
+    private Integer mediaPlayTimes;
+    private String mediaLink;
+    private String mediaName;
+    private String subMediaName;
+    private String fileUrl;
+    private String reccFormFileUrl;//推荐表保存的位置
+    private String projectBrief;
+    private String projectDesc;
+    private String vendor;
+    private List<WorksPrize> prizeList;
+    private List<WorksSubsidize> subsidizeList;
 }

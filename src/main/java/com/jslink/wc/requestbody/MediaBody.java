@@ -6,7 +6,7 @@ import java.util.Date;
 
 @Data
 public class MediaBody {
-    private int id;
+    private Integer id;
     private String name;  //栏目
     private String subName; //子栏目
     private Date playDate; //播放日期

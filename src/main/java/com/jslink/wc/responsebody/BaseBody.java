@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class BaseBody<T> {
     private List<T> data;
-    private int total;
+    private Integer total;
     private boolean success = true;
     private int pageSize;
     private int current;

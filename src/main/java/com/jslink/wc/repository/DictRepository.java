@@ -4,4 +4,5 @@ import com.jslink.wc.pojo.Dict;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DictRepository extends JpaRepository<Dict, Integer> {
+    Dict findByTypeAndValue(String type, int value);
 }

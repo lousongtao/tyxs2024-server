@@ -11,14 +11,12 @@ import java.util.Date;
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
     @Column
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
     @Column
     private Byte type;
-    @Column
-    private Integer workerAccountQuantity;
     @Column
     private String name;
     @Column
@@ -27,8 +25,26 @@ public class Account {
     private String password;
     @Column
     private String phone;
+//    @Column
+//    private Integer areaId; //局方帐号, 上传用户, 这两类需要知道区域
     @Column
-    private Integer areaId; //局方帐号, 上传用户, 这两类需要知道区域
+    private Integer parentAccountId; //上报账户要记录其所属的推荐账户
     @Column
-    private Integer parentAccountId;
+    private Integer orgTypeId;
+    @Column
+    private String permission;
+    @Column
+    private String contactPerson;
+    @Column
+    private String email;
+    @Column
+    private int quantityBrand;
+    @Column
+    private int quantityPeople;
+    @Column
+    private int quantityMgmtIndividual;
+    @Column
+    private int quantityMgmtOrg;
+    @Column
+    private int quantityWorks;
 }

@@ -20,7 +20,7 @@ public class DataDict {
     @Autowired
     private DictRepository dictRepository;
 
-    private List<Dict> dicts;
+//    private List<Dict> dicts;
     private List<Area> areas;
     private Map<Integer, Area> mapArea = new HashMap<>();
     private Map<Integer, Street> mapStreet = new HashMap<>();
@@ -28,20 +28,20 @@ public class DataDict {
 
     @PostConstruct
     public void loadArea(){
-        areas = areaRepository.findAll();
-        areas.stream().forEach(area -> {
-            mapArea.put(area.getId(), area);
-            area.getStreets().stream().forEach(street -> {
-                mapStreet.put(street.getId(), street);
-                mapStreetArea.put(street.getId(), area.getId());
-            });
-        });
-        dicts = dictRepository.findAll();
+//        areas = areaRepository.findAll();
+//        areas.stream().forEach(area -> {
+//            mapArea.put(area.getId(), area);
+//            area.getStreets().stream().forEach(street -> {
+//                mapStreet.put(street.getId(), street);
+//                mapStreetArea.put(street.getId(), area.getId());
+//            });
+//        });
+//        dicts = dictRepository.findAll();
     }
 
-    public List<Dict> getDicts() {
-        return dicts;
-    }
+//    public List<Dict> getDicts() {
+//        return dicts;
+//    }
 
     public List<Area> getAreas(){
         return areas;

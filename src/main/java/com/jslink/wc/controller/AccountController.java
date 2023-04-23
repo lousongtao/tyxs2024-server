@@ -1,20 +1,14 @@
 package com.jslink.wc.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.jslink.wc.pojo.Account;
-import com.jslink.wc.responsebody.AccountBody;
-import com.jslink.wc.responsebody.BaseBody;
-import com.jslink.wc.responsebody.CurrentUserBody;
-import com.jslink.wc.responsebody.LoginBody;
+import com.jslink.wc.requestbody.UpdateAccountBody;
+import com.jslink.wc.responsebody.*;
 import com.jslink.wc.service.AccountService;
 import com.jslink.wc.service.BaseController;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/wcapi/account")
@@ -22,59 +16,46 @@ public class AccountController extends BaseController {
     @Autowired
     private AccountService accountService;
 
+    /**
+     * 根据登录人的权限去查找
+     * @return
+     */
     @GetMapping()
-    public BaseBody<Account> getAccounts(){
-        List<Account> accounts = accountService.getAccounts();
-        BaseBody<Account> bb = new BaseBody<>();
-        bb.setCurrent(1);
-        bb.setData(accounts);
-        bb.setTotal(accounts.size());
-        bb.setPageSize(accounts.size());
-        return bb;
+    public PageResult<Account> getAccounts(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String account,
+            @RequestParam(required = false) Integer orgTypeId,
+            @RequestParam(required = false) Integer type,
+            @RequestParam int current,
+            @RequestParam int pageSize){
+        Authentication authentication = authenticationFacade.getAuthentication();
+        PageResult<Account> accounts = accountService.getAccounts(authentication.getName(), name, account, orgTypeId, type, current, pageSize);
+        return accounts;
+    }
+
+    //根据作品查找推荐单位帐号
+    @GetMapping("tjdw/works/{worksId}")
+    public AccountBody getTjdwAccount(@PathVariable int worksId){
+        AccountBody tjdw = accountService.getTjdwAccount(worksId);
+        return tjdw;
     }
 
     @PostMapping()
     public Account addAccount(@RequestBody Account account){
         Authentication authentication = authenticationFacade.getAuthentication();
-        return accountService.save("", account);
+        return accountService.save(authentication.getName(), account);
     }
 
     @PutMapping()
-    public Account updateAccount(@RequestBody Account account){
+    public Account updateAccount(@RequestBody UpdateAccountBody body){
         Authentication authentication = authenticationFacade.getAuthentication();
-        return accountService.save("", account);
+        return accountService.update(authentication.getName(), body);
     }
 
-    @PostMapping("/outLogin")
-    public Object outlogin(){
-        JSONObject jo = new JSONObject();
-        jo.put("success", true);
-        return jo;
-    }
-
-    /**
-     * 返回结果按照ant design pro要求的返回
-     * @param body
-     * @return
-     */
-    @PostMapping("/login")
-    public LoginBody login(@RequestBody LoginRequestBody body){
-        Account account = null;
-        try {
-            account = accountService.login(body.username, body.password);
-            LoginBody lb = new LoginBody();
-            if (account == null){
-                lb.setStatus(LoginBody.STATUS_ERROR);
-                return lb;
-            }
-
-            lb.setType("account");
-            lb.setCurrentAuthority("admin");
-
-            return lb;
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
+    @PutMapping("/password/{id}")
+    public Account updateAccount( @PathVariable Integer id, @RequestParam String password){
+        Authentication authentication = authenticationFacade.getAuthentication();
+        return accountService.updatePassword(authentication.getName(), id, password);
     }
 
     /**
@@ -83,20 +64,14 @@ public class AccountController extends BaseController {
      */
     @GetMapping("/currentuser")
     public CurrentUserBody currentUser(){
+        Authentication authentication = authenticationFacade.getAuthentication();
         CurrentUserBody cb = new CurrentUserBody();
         cb.setSuccess(true);
         AccountBody ab = new AccountBody();
-        Account account = accountService.getAccount("admin");
-        ab.setName(account.getName());
+        Account account = accountService.getAccount(authentication.getName());
+        BeanUtils.copyProperties(account, ab);
         ab.setUserid(account.getId());
-        ab.setPhone(account.getPhone());
-        ab.setType(account.getType());
         cb.setData(ab);
         return cb;
-    }
-
-    static class LoginRequestBody{
-        public String username;
-        public String password;
     }
 }

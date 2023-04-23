@@ -2,13 +2,12 @@ package com.jslink.wc.controller;
 
 import com.jslink.wc.pojo.Area;
 import com.jslink.wc.pojo.Dict;
+import com.jslink.wc.pojo.OrgType;
 import com.jslink.wc.service.BaseController;
 import com.jslink.wc.service.CommonService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -23,25 +22,21 @@ public class CommonController extends BaseController {
         return commonService.getAreas();
     }
 
-    @PostMapping("/uploadfile")
-    public String handleFileUpload(@RequestParam MultipartFile file) throws IOException {
-        String fileName = commonService.saveFile(file);
-        return fileName;
-    }
-
-    @PostMapping("/deletetempfile")
-    public String deleteTempFile(@RequestParam String filePath) throws IOException {
-        String fileName = commonService.deleteFile(filePath);
-        return fileName;
-    }
 
     @GetMapping("/dict")
     public List<Dict> getDict(){
+        Authentication authentication = authenticationFacade.getAuthentication();
         return commonService.getDict();
     }
 
     @PostMapping("/dict")
     public void saveDict(@RequestParam String type, @RequestParam String value){
-        commonService.saveDict(type, value);
+        Authentication authentication = authenticationFacade.getAuthentication();
+        commonService.saveDict(authentication.getName(), type, value);
+    }
+
+    @GetMapping("/orgtype")
+    public List<OrgType> getOrgType(){
+        return commonService.getOrgType();
     }
 }
