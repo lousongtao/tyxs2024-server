@@ -7,6 +7,7 @@ import javax.persistence.Column;
 
 @Data
 public class AccountBody {
+    private Integer id;
     private String name;
     private Integer userid;
     private String phone;
@@ -16,5 +17,6 @@ public class AccountBody {
     private String permission;
     private String contactPerson;
     private String email;
+    private Integer parentAccountId;
 
 }

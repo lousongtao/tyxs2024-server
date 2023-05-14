@@ -32,4 +32,5 @@ public class OutstandingPeopleBody {
     private List<PeopleExperience> experienceList;
     private List<PeoplePrize> prizeList;
     private List<PeopleSubsidize> subsidizeList;
+    private Integer accountId;
 }

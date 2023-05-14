@@ -450,6 +450,8 @@ public class OutstandingPeopleServiceImpl implements OutstandingPeopleService{
                         if (ot.getId().equals(tj.getOrgTypeId()))
                             objs[0] = ot.getName();
                     }
+                    objs[18] = tj.getContactPerson();
+                    objs[19] = tj.getPhone();
                     break;
                 }
             }
@@ -459,31 +461,32 @@ public class OutstandingPeopleServiceImpl implements OutstandingPeopleService{
                 objs[4] = d.getName();
             }
             if (d.getType().equals(Constants.DEGREE) && d.getValue().equals(people.getEduDegree())){
-                objs[9] = d.getName();
+                objs[10] = d.getName();
             }
         }
         if (people.getFileUrl() != null && people.getFileUrl().indexOf(Constants.DIRECTORY_WORKS_FILES) > 0)
             objs[3] = Constants.PUBLISH_DOMAIN + "/" + people.getFileUrl().substring(people.getFileUrl().indexOf(Constants.DIRECTORY_WORKS_FILES));
-        objs[5] = people.getName();
-        objs[6] = people.getGender() == null ? "" : (people.getGender() == Constants.GENDER_MALE ? "男" : "女");
-        objs[7] = people.getRace();
-        objs[8] = people.getBirth() == null ? "" : Constants.DFYMD.format(people.getBirth());
-        objs[10] = people.getPhone();
-        objs[11] = people.getCompany();
-        objs[12] = people.getPosition();
-        objs[13] = people.getTitle();
-        objs[14] = people.getAddress();
-        objs[15] = people.getEmail();
-        objs[16] = people.getDomain();
+        objs[5] = people.getApplyType() == 3 ? "新锐人物" : "杰出人物";
+        objs[6] = people.getName();
+        objs[7] = people.getGender() == null ? "" : (people.getGender() == Constants.GENDER_MALE ? "男" : "女");
+        objs[8] = people.getRace();
+        objs[9] = people.getBirth() == null ? "" : Constants.DFYMD.format(people.getBirth());
+        objs[11] = people.getPhone();
+        objs[12] = people.getCompany();
+        objs[13] = people.getPosition();
+        objs[14] = people.getTitle();
+        objs[15] = people.getAddress();
+        objs[16] = people.getEmail();
+        objs[17] = people.getDomain();
 
         return objs;
     }
 
     @Override
     public ResponseEntity<byte[]> exportExcel() throws IOException {
-        //                                0        1          2         3          4         5       6      7    8        9       10         11      12   13     14       15       16
-        String[] headers = new String[]{"机构类型", "推荐单位", "申报单位", "本地链接", "申报类别", "姓名", "性别","民族","出生年月","学历","手机号码","工作单位", "职务", "职称", "通讯地址", "电子邮箱", "从事专业/工作领域"};
-        int [] columnWidth = new int[]{  7000,     7000,      7000,     13000,     3000,     5000,   2000, 2000, 5000,    4000,   5000,   10000,    6000,  6000,   13000,    10000,     10000};
+        //                                0        1          2         3          4         5          6      7    8        9       10         11      12   13     14       15        16           17                18              19
+        String[] headers = new String[]{"机构类型", "推荐单位", "申报单位", "本地链接", "申报类别", "申报类别", "姓名", "性别","民族","出生年月","学历","手机号码","工作单位", "职务", "职称", "通讯地址", "电子邮箱", "从事专业/工作领域", "推荐单位联系人", "推荐单位联系电话"};
+        int [] columnWidth = new int[]{  7000,     7000,      7000,     13000,     3000,     5000,     5000,   2000, 2000, 5000,    4000,   5000,   10000,    6000,  6000,   13000,    10000,     10000,             10000,              10000};
         Workbook wb = new HSSFWorkbook();
         Sheet sheet = wb.createSheet("科普人物");
         Row rowTitle = getTitleRow(sheet, headers.length);

@@ -24,4 +24,5 @@ public class BrandBody {
     private String reccFormFileUrl;//推荐表保存的位置
     private List<BrandPrize> prizeList;
     private List<BrandSubsidize> subsidizeList;
+    private Integer accountId;
 }

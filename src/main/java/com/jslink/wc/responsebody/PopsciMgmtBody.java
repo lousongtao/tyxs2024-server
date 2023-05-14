@@ -37,4 +37,5 @@ public class PopsciMgmtBody {
     private List<PopsciIndividualExperience> experienceList;
     private List<PopsciPrize> prizeList;
     private List<PopsciSubsidize> subsidizeList;
+    private Integer accountId;
 }

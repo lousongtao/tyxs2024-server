@@ -4,10 +4,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.jslink.wc.pojo.Account;
 import com.jslink.wc.responsebody.LoginBody;
 import com.jslink.wc.service.AccountService;
+import com.jslink.wc.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.text.ParseException;
+import java.util.Date;
 
 @RestController
 @RequestMapping("/wcapi/login")
@@ -28,6 +32,7 @@ public class LoginController {
      */
     @PostMapping("/login")
     public LoginBody login(@RequestBody com.jslink.wc.responsebody.LoginBody body){
+
         Account account = null;
         try {
             account = accountService.login(body.getUsername(), body.getPassword());
@@ -35,6 +40,12 @@ public class LoginController {
             if (account == null){
                 lb.setStatus(LoginBody.STATUS_ERROR);
                 return lb;
+            }
+            if (account.getType() != Constants.ACCOUNT_TYPE_ADMIN){
+                Date date = new Date();
+                if (date.compareTo(Constants.DFYMD.parse("2023-04-30")) > 0){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "提交日期已结束, 有问题请联系管理员.");
+                }
             }
 
             lb.setType("account");

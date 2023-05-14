@@ -32,4 +32,5 @@ public class WorksBody {
     private String vendor;
     private List<WorksPrize> prizeList;
     private List<WorksSubsidize> subsidizeList;
+    private Integer accountId;
 }

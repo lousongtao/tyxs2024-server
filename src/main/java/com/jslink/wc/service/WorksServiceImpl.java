@@ -371,6 +371,7 @@ public class WorksServiceImpl implements WorksService{
             for(Account tj: accounts){
                 if (tj.getId().equals(postAcc.getParentAccountId())){
                     objs[6] = tj.getName();
+                    objs[14] = tj.getPhone();
                     for(OrgType ot : orgTypes){
                         if (ot.getId().equals(tj.getOrgTypeId()))
                             objs[0] = ot.getName();
@@ -401,8 +402,8 @@ public class WorksServiceImpl implements WorksService{
         objs[10] = works.getSubMediaName();
         objs[11] = works.getMediaPlayDate() == null ? "" : Constants.DFYMD.format(works.getMediaPlayDate());
         objs[12] = works.getMediaPlayTimes();
-        objs[13] = works.getIntro();
-        objs[14] = works.getPhone();
+        objs[13] = works.getProjectBrief();
+
         objs[15] = works.getVendor();
         return objs;
     }
