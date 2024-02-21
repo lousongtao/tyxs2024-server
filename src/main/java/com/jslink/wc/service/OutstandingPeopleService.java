@@ -22,7 +22,7 @@ public interface OutstandingPeopleService {
 
     OutstandingPeople updatePeople(String accountName, Integer id, AddOutstandingPeopleBody body) throws IOException;
 
-    OutstandingPeople returnPeople(String accountName, Integer id);
+    OutstandingPeople returnPeople(String accountName, Integer id, String returnReason);
 
     ResponseEntity<byte[]> printPeople(Integer id) throws UnsupportedEncodingException;
 

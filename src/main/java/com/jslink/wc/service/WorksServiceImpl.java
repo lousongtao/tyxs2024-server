@@ -1,9 +1,6 @@
 package com.jslink.wc.service;
 
-import com.alibaba.fastjson.JSONObject;
-import com.jslink.wc.config.DataDict;
 import com.jslink.wc.exception.DataCheckException;
-import com.jslink.wc.exception.ForbiddenException;
 import com.jslink.wc.exception.NotFoundException;
 import com.jslink.wc.pojo.*;
 import com.jslink.wc.repository.*;
@@ -19,9 +16,6 @@ import com.spire.doc.Table;
 import com.spire.doc.collections.SectionCollection;
 import com.spire.doc.documents.Paragraph;
 import org.apache.poi.common.usermodel.HyperlinkType;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFCreationHelper;
-import org.apache.poi.hssf.usermodel.HSSFHyperlink;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Hyperlink;
@@ -43,6 +37,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.io.*;
 import java.net.URLEncoder;
@@ -71,12 +67,13 @@ public class WorksServiceImpl implements WorksService{
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
-    private DataDict dataDict;
-    @Autowired
     private WorksSubsidizeRepository subsidizeRepository;
     @Autowired
     private WorksPrizeRepository prizeRepository;
-
+    @Autowired
+    private ReturnHistoryRepository returnHistoryRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
     private List<Account> accounts = new ArrayList<>();
     private List<OrgType> orgTypes = new ArrayList<>();
 
@@ -133,6 +130,11 @@ public class WorksServiceImpl implements WorksService{
             BeanUtils.copyProperties(w, wb);
             wb.setPrizeList(prizeRepository.findByWorksId(w.getId()));
             wb.setSubsidizeList(subsidizeRepository.findByWorksId(w.getId()));
+            List<ReturnHistory> rhs = returnHistoryRepository.findByObjectIdAndType(w.getId(), Constants.RETURNHISTORY_TYPE_WORKS);
+            if (!rhs.isEmpty()){
+                rhs.sort(Comparator.comparingInt(ReturnHistory::getId));
+                wb.setReturnHistory(rhs.get(rhs.size() - 1));
+            }
             return wb;
         }).collect(Collectors.toList());
 
@@ -287,7 +289,7 @@ public class WorksServiceImpl implements WorksService{
         map.put("describe", formatWorksValue(works.getIntro(), 10000));
         map.put("projectBrief", works.getProjectBrief());
         map.put("projectDesc", works.getProjectDesc());
-
+        map.put("selfRecommendation", works.getSelfRecommendation());
 
         for(Object obj : section.getTables()){
             Table table = (Table)obj;
@@ -510,13 +512,16 @@ public class WorksServiceImpl implements WorksService{
     }
 
     @Override
-    public Works returnWorks(String accountNameame, Integer id) {
+    public Works returnWorks(String accountNameame, Integer id, String returnReason) {
         Works w = worksRepository.findById(id).get();
         if (w.getStatus() != Constants.WORKS_STATUS_SUBMIT){
             throw new DataCheckException(HttpStatus.FORBIDDEN, "该记录不在提交状态, 无法回退.");
         }
         w.setStatus(Constants.WORKS_STATUS_DRAFT);
         worksRepository.save(w);
+        ReturnHistory rh = new ReturnHistory(Constants.RETURNHISTORY_TYPE_WORKS, returnReason, id, new Date());
+        returnHistoryRepository.save(rh);
+        entityManager.flush();//测试中发现对象创建后未持久化到数据库, 虽然在当前session下能查到这个数据, 但是不保证该数据合适进行持久化, 为了安全, 这里手动持久化.
         return w;
     }
 

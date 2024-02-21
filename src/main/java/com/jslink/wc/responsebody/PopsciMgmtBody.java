@@ -38,4 +38,5 @@ public class PopsciMgmtBody {
     private List<PopsciPrize> prizeList;
     private List<PopsciSubsidize> subsidizeList;
     private Integer accountId;
+    private ReturnHistory returnHistory;
 }

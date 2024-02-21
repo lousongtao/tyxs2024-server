@@ -47,6 +47,8 @@ public class Works {
     private String fileUrl;
     @Column
     private String reccFormFileUrl;//推荐表保存的位置
+    @Column
+    private String selfRecommendation;
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "account_id")
@@ -57,4 +59,5 @@ public class Works {
     private String projectDesc;
     @Column
     private String vendor;
+
 }

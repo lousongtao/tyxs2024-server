@@ -44,7 +44,7 @@ public class LoginController {
             if (account.getType() != Constants.ACCOUNT_TYPE_ADMIN){
                 Date date = new Date();
                 if (date.compareTo(Constants.DFYMD.parse("2023-04-30")) > 0){
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "提交日期已结束, 有问题请联系管理员.");
+//                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "提交日期已结束, 有问题请联系管理员.");
                 }
             }
 

@@ -3,6 +3,7 @@ package com.jslink.wc.responsebody;
 import com.jslink.wc.pojo.PeopleExperience;
 import com.jslink.wc.pojo.PeoplePrize;
 import com.jslink.wc.pojo.PeopleSubsidize;
+import com.jslink.wc.pojo.ReturnHistory;
 import lombok.Data;
 
 import java.util.Date;
@@ -33,4 +34,5 @@ public class OutstandingPeopleBody {
     private List<PeoplePrize> prizeList;
     private List<PeopleSubsidize> subsidizeList;
     private Integer accountId;
+    private ReturnHistory returnHistory;
 }

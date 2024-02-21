@@ -47,8 +47,8 @@ public class OutstandingPeopleController extends BaseController {
     }
 
     @PutMapping("/return/{id}")
-    public OutstandingPeople returnPeople(@PathVariable Integer id) throws IOException {
+    public OutstandingPeople returnPeople(@PathVariable Integer id, @RequestParam String returnReason) throws IOException {
         Authentication authentication = authenticationFacade.getAuthentication();
-        return outstandingPeopleService.returnPeople(authentication.getName(), id);
+        return outstandingPeopleService.returnPeople(authentication.getName(), id, returnReason);
     }
 }

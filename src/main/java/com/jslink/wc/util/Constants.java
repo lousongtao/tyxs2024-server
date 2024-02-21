@@ -71,4 +71,9 @@ public class Constants {
     public static final String DEGREE_BACHELOR = "大学本科";
     public static final String DEGREE_MASTER = "研究生";
     public static final String DEGREE_DOCTOR = "博士";
+
+    public static final int RETURNHISTORY_TYPE_BRAND = 1;
+    public static final int RETURNHISTORY_TYPE_PEOPLE = 2;
+    public static final int RETURNHISTORY_TYPE_POPSCI = 3;
+    public static final int RETURNHISTORY_TYPE_WORKS = 4;
 }

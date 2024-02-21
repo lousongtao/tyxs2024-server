@@ -25,5 +25,5 @@ public interface WorksService {
 
     ResponseEntity<byte[]> exportWorksExcel(String poster, Integer type, Integer tjdw) throws IOException;
 
-    Works returnWorks(String accountNameame, Integer id);
+    Works returnWorks(String accountNameame, Integer id, String returnReason);
 }

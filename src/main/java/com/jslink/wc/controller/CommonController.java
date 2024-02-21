@@ -1,6 +1,5 @@
 package com.jslink.wc.controller;
 
-import com.jslink.wc.pojo.Area;
 import com.jslink.wc.pojo.Dict;
 import com.jslink.wc.pojo.OrgType;
 import com.jslink.wc.service.BaseController;
@@ -16,12 +15,6 @@ public class CommonController extends BaseController {
 
     @Autowired
     private CommonService commonService;
-
-    @GetMapping("/areas")
-    public List<Area> getAreas(){
-        return commonService.getAreas();
-    }
-
 
     @GetMapping("/dict")
     public List<Dict> getDict(){

@@ -15,13 +15,13 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 public interface BrandService {
-    PageResult<BrandBody> getBrand(String accountName, String name, int current, int pageSize);
+    PageResult<BrandBody> getBrand(String accountName, String name, String commitAccountName, int current, int pageSize);
 
     Brand save(String accountName, AddBrandBody body) throws IOException;
 
     Brand update(String accountName, Integer id, AddBrandBody body) throws IOException;
 
-    Brand returnBrand(String accountName, Integer id);
+    Brand returnBrand(String accountName, Integer id, String returnReason);
 
     ResponseEntity<byte[]> printBrand(Integer id) throws UnsupportedEncodingException;
 

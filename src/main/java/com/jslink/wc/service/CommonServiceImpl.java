@@ -25,8 +25,6 @@ public class CommonServiceImpl implements CommonService{
     @Value("${fileupload_temp_savepath}")
     private String savepath;
     @Autowired
-    private AreaRepository areaRepository;
-    @Autowired
     private DictRepository dictRepository;
     @Autowired
     private AccountRepository accountRepository;
@@ -34,10 +32,6 @@ public class CommonServiceImpl implements CommonService{
     private WorksRepository worksRepository;
     @Autowired
     private OrgTypeRepository orgTypeRepository;
-    @Override
-    public List<Area> getAreas() {
-        return areaRepository.findAll();
-    }
 
     @Override
     public String saveFile(MultipartFile file) throws IOException {

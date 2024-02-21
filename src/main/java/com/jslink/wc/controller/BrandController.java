@@ -25,10 +25,11 @@ public class BrandController extends BaseController {
 
     @GetMapping()
     public PageResult<BrandBody> getBrand(@RequestParam(required = false) String name,
+                                          @RequestParam(required = false) String accountName,
                                           @RequestParam int current,
                                           @RequestParam int pageSize){
         Authentication authentication = authenticationFacade.getAuthentication();
-        return brandService.getBrand(authentication.getName(), name, current, pageSize);
+        return brandService.getBrand(authentication.getName(), name, accountName, current, pageSize);
     }
 
     @PostMapping()
@@ -44,8 +45,8 @@ public class BrandController extends BaseController {
     }
 
     @PutMapping("/return/{id}")
-    public Brand returnBrand(@PathVariable Integer id) throws IOException {
+    public Brand returnBrand(@PathVariable Integer id, @RequestParam String returnReason) throws IOException {
         Authentication authentication = authenticationFacade.getAuthentication();
-        return brandService.returnBrand(authentication.getName(), id);
+        return brandService.returnBrand(authentication.getName(), id, returnReason);
     }
 }

@@ -38,6 +38,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.io.*;
 import java.net.URLEncoder;
@@ -73,7 +75,10 @@ public class PopsciMgmtServiceImpl implements PopsciMgmtService{
     private DictRepository dictRepository;
     @Autowired
     private PopsciIndividualExperienceRepository popsciIndividualExperienceRepository;
-
+    @Autowired
+    private ReturnHistoryRepository returnHistoryRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
     @Override
     public PageResult<PopsciMgmtBody> getPopsci(String accountName, Integer applyType, String deptName, String name, int currentPage, int pageSize) {
         //order by status desc
@@ -120,19 +125,27 @@ public class PopsciMgmtServiceImpl implements PopsciMgmtService{
             body.setSubsidizeList(subsidizeRepository.findByPopsciMgmtId(b.getId()));
             body.setPrizeList(prizeRepository.findByPopsciMgmtId(b.getId()));
             body.setExperienceList(popsciIndividualExperienceRepository.findByPopsciMgmtId(b.getId()));
+            List<ReturnHistory> rhs = returnHistoryRepository.findByObjectIdAndType(b.getId(), Constants.RETURNHISTORY_TYPE_POPSCI);
+            if (!rhs.isEmpty()){
+                rhs.sort(Comparator.comparingInt(ReturnHistory::getId));
+                body.setReturnHistory(rhs.get(rhs.size() - 1));
+            }
             return body;
         }).collect(Collectors.toList());
         return new PageResult<>(bodies, currentPage, pcs.getTotalElements());
     }
 
     @Override
-    public PopsciMgmt returnPopsci(String accountName, Integer id) {
+    public PopsciMgmt returnPopsci(String accountName, Integer id, String returnReason) {
         PopsciMgmt ps = popsciMgmtRepository.findById(id).get();
         if (ps.getStatus() != Constants.WORKS_STATUS_SUBMIT){
             throw new DataCheckException(HttpStatus.FORBIDDEN, "该记录不在提交状态, 无法回退.");
         }
         ps.setStatus(Constants.WORKS_STATUS_DRAFT);
         popsciMgmtRepository.save(ps);
+        ReturnHistory rh = new ReturnHistory(Constants.RETURNHISTORY_TYPE_POPSCI, returnReason, id, new Date());
+        returnHistoryRepository.save(rh);
+        entityManager.flush();//测试中发现对象创建后未持久化到数据库, 虽然在当前session下能查到这个数据, 但是不保证该数据合适进行持久化, 为了安全, 这里手动持久化.
         return ps;
     }
 

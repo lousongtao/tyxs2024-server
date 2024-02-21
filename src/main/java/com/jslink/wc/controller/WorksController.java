@@ -49,8 +49,8 @@ public class WorksController extends BaseController {
     }
 
     @PutMapping("/return/{id}")
-    public Works returnWorks(@PathVariable Integer id) throws IOException {
+    public Works returnWorks(@PathVariable Integer id, @RequestParam String returnReason) throws IOException {
         Authentication authentication = authenticationFacade.getAuthentication();
-        return worksService.returnWorks(authentication.getName(), id);
+        return worksService.returnWorks(authentication.getName(), id, returnReason);
     }
 }

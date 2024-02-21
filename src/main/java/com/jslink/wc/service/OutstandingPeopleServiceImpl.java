@@ -38,6 +38,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.io.*;
 import java.net.URLEncoder;
@@ -73,7 +75,10 @@ public class OutstandingPeopleServiceImpl implements OutstandingPeopleService{
     private OrgTypeRepository orgTypeRepository;
     @Autowired
     private DictRepository dictRepository;
-
+    @Autowired
+    private ReturnHistoryRepository returnHistoryRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
     @Override
     public PageResult<OutstandingPeopleBody> getPeople(String accountName, String name, Integer applyType, String phone, String company, int page, int pageSize) {
         //order by status desc
@@ -120,6 +125,11 @@ public class OutstandingPeopleServiceImpl implements OutstandingPeopleService{
             body.setExperienceList(experienceRepository.findByPeopleId(p.getId()));
             body.setPrizeList(prizeRepository.findByPeopleId(p.getId()));
             body.setSubsidizeList(subsidizeRepository.findByPeopleId(p.getId()));
+            List<ReturnHistory> rhs = returnHistoryRepository.findByObjectIdAndType(p.getId(), Constants.RETURNHISTORY_TYPE_PEOPLE);
+            if (!rhs.isEmpty()){
+                rhs.sort(Comparator.comparingInt(ReturnHistory::getId));
+                body.setReturnHistory(rhs.get(rhs.size() - 1));
+            }
             return body;
         }).collect(Collectors.toList());
         return new PageResult<>(bodies, page, people.getTotalElements());
@@ -135,7 +145,7 @@ public class OutstandingPeopleServiceImpl implements OutstandingPeopleService{
     public OutstandingPeople savePeople(String accountName, AddOutstandingPeopleBody body) throws IOException {
         Account account = accountRepository.findByAccount(accountName);
         OutstandingPeople p = new OutstandingPeople();
-        BeanUtils.copyProperties(body, p, "status");
+        BeanUtils.copyProperties(body, p);
         //前端传递的文件路径, 统一转化为正斜线
         if (body.getFileUrl() != null) {
             String fileUrl = body.getFileUrl().replaceAll("\\\\", "/");
@@ -232,13 +242,16 @@ public class OutstandingPeopleServiceImpl implements OutstandingPeopleService{
     }
 
     @Override
-    public OutstandingPeople returnPeople(String accountName, Integer id) {
+    public OutstandingPeople returnPeople(String accountName, Integer id, String returnReason) {
         OutstandingPeople people = peopleRepository.findById(id).get();
         if (people.getStatus() != Constants.WORKS_STATUS_SUBMIT){
             throw new DataCheckException(HttpStatus.FORBIDDEN, "该记录不在提交状态, 无法回退.");
         }
         people.setStatus(Constants.WORKS_STATUS_DRAFT);
         peopleRepository.save(people);
+        ReturnHistory rh = new ReturnHistory(Constants.RETURNHISTORY_TYPE_PEOPLE, returnReason, id, new Date());
+        returnHistoryRepository.save(rh);
+        entityManager.flush();//测试中发现对象创建后未持久化到数据库, 虽然在当前session下能查到这个数据, 但是不保证该数据合适进行持久化, 为了安全, 这里手动持久化.
         return people;
     }
 

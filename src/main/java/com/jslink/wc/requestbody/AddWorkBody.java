@@ -25,6 +25,7 @@ public class AddWorkBody {
     private String vendor;
     private String projectBrief;
     private String projectDesc;
+    private String selfRecommendation;
     private List<PrizeBody> prizeList;
     private List<SubsidizeBody> subsidizeList;
 }

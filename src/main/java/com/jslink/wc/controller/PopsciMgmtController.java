@@ -46,8 +46,8 @@ public class PopsciMgmtController extends BaseController {
     }
 
     @PutMapping("/return/{id}")
-    public PopsciMgmt returnPopsci(@PathVariable Integer id) throws IOException {
+    public PopsciMgmt returnPopsci(@PathVariable Integer id, @RequestParam String returnReason) throws IOException {
         Authentication authentication = authenticationFacade.getAuthentication();
-        return popsciMgmtService.returnPopsci(authentication.getName(), id);
+        return popsciMgmtService.returnPopsci(authentication.getName(), id, returnReason);
     }
 }

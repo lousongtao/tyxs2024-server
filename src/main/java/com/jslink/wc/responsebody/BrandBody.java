@@ -2,6 +2,7 @@ package com.jslink.wc.responsebody;
 
 import com.jslink.wc.pojo.BrandPrize;
 import com.jslink.wc.pojo.BrandSubsidize;
+import com.jslink.wc.pojo.ReturnHistory;
 import lombok.Data;
 
 import java.util.List;
@@ -25,4 +26,6 @@ public class BrandBody {
     private List<BrandPrize> prizeList;
     private List<BrandSubsidize> subsidizeList;
     private Integer accountId;
+    private String accountName;
+    private ReturnHistory returnHistory;
 }

@@ -1,6 +1,7 @@
 package com.jslink.wc.responsebody;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.jslink.wc.pojo.ReturnHistory;
 import com.jslink.wc.pojo.WorksPrize;
 import com.jslink.wc.pojo.WorksSubsidize;
 import lombok.Data;
@@ -30,7 +31,9 @@ public class WorksBody {
     private String projectBrief;
     private String projectDesc;
     private String vendor;
+    private String selfRecommendation;
     private List<WorksPrize> prizeList;
     private List<WorksSubsidize> subsidizeList;
     private Integer accountId;
+    private ReturnHistory returnHistory;
 }

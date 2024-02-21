@@ -36,6 +36,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.io.*;
 import java.net.URLEncoder;
@@ -55,6 +57,8 @@ public class BrandServiceImpl implements BrandService{
     private String templateRecommend;
     @Value("${WorksReccFormDirectory}")
     private String reccFormDirectory;
+    @PersistenceContext
+    private EntityManager entityManager;
     @Autowired
     private BrandRepository brandRepository;
     @Autowired
@@ -67,14 +71,26 @@ public class BrandServiceImpl implements BrandService{
     private OrgTypeRepository orgTypeRepository;
     @Autowired
     private DictRepository dictRepository;
+    @Autowired
+    private ReturnHistoryRepository returnHistoryRepository;
     @Override
-    public PageResult<BrandBody> getBrand(String accountName, String name, int page, int pageSize) {
+    public PageResult<BrandBody> getBrand(String accountName, String name, String commitAccountName, int page, int pageSize) {
         //order by status desc
         Sort sort = Sort.by("status");
         Pageable pageable = PageRequest.of(page-1, pageSize, sort);
         List<Specification<Brand>> specs = new ArrayList<>();
         if (name != null && name.trim().length() > 0){
             specs.add((Specification<Brand>) (root, query, cb) -> cb.like(root.get("name"), "%" + name +"%"));
+        }
+        if (commitAccountName != null && commitAccountName.trim().length() > 0){
+            List<Account> allAccounts = accountRepository.findAll();
+            allAccounts = allAccounts.stream().filter(a -> a.getName().indexOf(commitAccountName) >= 0).collect(Collectors.toList());
+            if (allAccounts.isEmpty()){
+                specs.add((Specification<Brand>) (root, query, cb) -> cb.equal(root.get("id"), 0));
+            } else {
+                List<Integer> accountIds = allAccounts.stream().map(Account::getId).collect(Collectors.toList());
+                specs.add((Specification<Brand>) (root, query, cb) -> root.get("account").get("id").in(accountIds));
+            }
         }
         Account account = accountRepository.findByAccount(accountName);
         if (account.getType() == Constants.ACCOUNT_TYPE_UNIT1){
@@ -104,6 +120,15 @@ public class BrandServiceImpl implements BrandService{
             BeanUtils.copyProperties(b, body);
             body.setPrizeList(prizeRepository.findByBrandId(b.getId()));
             body.setSubsidizeList(subsidizeRepository.findByBrandId(body.getId()));
+            Account a = b.getAccount();
+            body.setAccountId(a.getId());
+            body.setAccountName(a.getName());
+            List<ReturnHistory> rhs = returnHistoryRepository.findByObjectIdAndType(b.getId(), Constants.RETURNHISTORY_TYPE_BRAND);
+            if (!rhs.isEmpty()){
+                rhs.sort(Comparator.comparingInt(ReturnHistory::getId));
+                body.setReturnHistory(rhs.get(rhs.size() - 1));
+            }
+
             return body;
         }).collect(Collectors.toList());
         return new PageResult<>(brandBodies, page, brands.getTotalElements());
@@ -204,13 +229,16 @@ public class BrandServiceImpl implements BrandService{
     }
 
     @Override
-    public Brand returnBrand(String accountName, Integer id) {
+    public Brand returnBrand(String accountName, Integer id, String returnReason) {
         Brand b = brandRepository.findById(id).get();
         if (b.getStatus() != Constants.WORKS_STATUS_SUBMIT){
             throw new DataCheckException(HttpStatus.FORBIDDEN, "该记录不在提交状态, 无法回退.");
         }
         b.setStatus(Constants.WORKS_STATUS_DRAFT);
         brandRepository.save(b);
+        ReturnHistory rh = new ReturnHistory(Constants.RETURNHISTORY_TYPE_BRAND, returnReason, id, new Date());
+        returnHistoryRepository.save(rh);
+        entityManager.flush();//测试中发现对象创建后未持久化到数据库, 虽然在当前session下能查到这个数据, 但是不保证该数据合适进行持久化, 为了安全, 这里手动持久化.
         return b;
     }
 

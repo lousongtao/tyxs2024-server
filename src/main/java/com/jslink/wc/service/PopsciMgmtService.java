@@ -22,7 +22,7 @@ public interface PopsciMgmtService {
 
     PageResult<PopsciMgmtBody> getPopsci(String accountName, Integer applyType, String deptName, String name, int currentPage, int pageSize);
 
-    PopsciMgmt returnPopsci(String accountName, Integer id);
+    PopsciMgmt returnPopsci(String accountName, Integer id, String returnReason);
 
     ResponseEntity<byte[]> printPopsci(Integer id) throws UnsupportedEncodingException;
 
