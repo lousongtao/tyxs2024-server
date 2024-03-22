@@ -2,6 +2,8 @@ package com.jslink.wc.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.jslink.wc.pojo.Account;
+import com.jslink.wc.pojo.SystemTurnOffTime;
+import com.jslink.wc.repository.SystemTurnOffTimeRepository;
 import com.jslink.wc.responsebody.LoginBody;
 import com.jslink.wc.service.AccountService;
 import com.jslink.wc.util.Constants;
@@ -12,12 +14,15 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/wcapi/login")
 public class LoginController {
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private SystemTurnOffTimeRepository systemTurnOffTimeRepository;
 
     @PostMapping("/outLogin")
     public Object outlogin(){
@@ -42,9 +47,12 @@ public class LoginController {
                 return lb;
             }
             if (account.getType() != Constants.ACCOUNT_TYPE_ADMIN){
-                Date date = new Date();
-                if (date.compareTo(Constants.DFYMD.parse("2023-04-30")) > 0){
-//                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "提交日期已结束, 有问题请联系管理员.");
+                List<SystemTurnOffTime> turnoff = systemTurnOffTimeRepository.findAll();
+                if (!turnoff.isEmpty()){
+                    Date date = new Date();
+                    if (date.compareTo(turnoff.get(0).getTime()) > 0){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "提交日期已结束, 有问题请联系管理员.");
+                    }
                 }
             }
 

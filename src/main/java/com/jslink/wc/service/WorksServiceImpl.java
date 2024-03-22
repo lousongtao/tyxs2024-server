@@ -152,7 +152,9 @@ public class WorksServiceImpl implements WorksService{
         Account account = accountRepository.findByAccount(accountName);
         Works works = new Works();
         BeanUtils.copyProperties(body, works);
-        works.setCreateDate(new Date());
+        Date time = new Date();
+        works.setCreateDate(time);
+        works.setUpdateDate(time);
         //前端传递的文件路径, 统一转化为正斜线
         if (body.getFileUrl() != null) {
             String fileUrl = body.getFileUrl().replaceAll("\\\\", "/");
@@ -216,7 +218,7 @@ public class WorksServiceImpl implements WorksService{
     public Works updateWorks(String user, Integer id, AddWorkBody body) throws IOException {
         final Works works = worksRepository.findById(id).get();
         //首先使用工具拷贝属性, 特殊属性分别在copyProperties后面处理
-        BeanUtils.copyProperties(body, works, "status");
+        BeanUtils.copyProperties(body, works, "status", "createDate");
         //前端传递的文件路径, 统一转化为正斜线
         works.setFileUrl(null);
         if (body.getFileUrl() != null) {
