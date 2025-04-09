@@ -284,6 +284,6 @@ public class AccountServiceImpl implements AccountService, UserDetailsService {
     }
 
     public static void main(String[] args) {
-        System.out.println(new AccountServiceImpl().md5String("1234"));
+        System.out.println(new AccountServiceImpl().md5String("admin"));
     }
 }

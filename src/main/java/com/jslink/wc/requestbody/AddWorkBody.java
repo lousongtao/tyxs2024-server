@@ -13,6 +13,7 @@ public class AddWorkBody {
     private String poster;
     private String phone;
     private Integer type;
+    private String topic;
     private Date createDate;
     private Byte status;
     private String intro;

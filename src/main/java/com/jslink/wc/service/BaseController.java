@@ -17,7 +17,7 @@ public class BaseController {
 
     @ExceptionHandler({SQLException.class, org.springframework.dao.DataAccessException.class})
     public Object databaseError(Exception e) {
-        logger.error("BaseController", e);
+        logger.error("Operator: " + authenticationFacade.getAuthentication().getName(), e);
         e.printStackTrace();
 //        return new WsBaseResult(false, generateExceptionMessage(e));
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -28,7 +28,7 @@ public class BaseController {
 
     @ExceptionHandler(Exception.class)
     public Object handleError(Exception e) {
-        logger.error("BaseController", e);
+        logger.error("Operator: " + authenticationFacade.getAuthentication().getName(), e);
         e.printStackTrace();
 //        return new WsBaseResult(false, generateExceptionMessage(e));
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;

@@ -36,4 +36,5 @@ public class WorksBody {
     private List<WorksSubsidize> subsidizeList;
     private Integer accountId;
     private ReturnHistory returnHistory;
+    private String topic;
 }

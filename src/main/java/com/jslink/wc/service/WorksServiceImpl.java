@@ -201,12 +201,18 @@ public class WorksServiceImpl implements WorksService{
         }
     }
 
+    /**
+     * 根据2024年的要求, 将每个作品放入到一个文件夹下, 该文件夹下包括作品和推荐表
+     * 需要考虑到某些特殊符号无法生成目录名, 需要做一些转换, 比如把英文符号转化成中文符号
+     * @return
+     */
     private String getPersistFilePath(Works works){
-        Account sbdw = works.getAccount();
-        Account tjdw = accountRepository.findById(sbdw.getParentAccountId()).get();
-        OrgType ot = orgTypeRepository.findById(tjdw.getOrgTypeId()).get();
-        return "/".concat(ot.getName()).concat("/").concat(tjdw.getName()).concat("/").concat(sbdw.getName())
-                        .concat("/科普作品/").concat(works.getId().toString());
+//        Account sbdw = works.getAccount();
+//        Account tjdw = accountRepository.findById(sbdw.getParentAccountId()).get();
+//        OrgType ot = orgTypeRepository.findById(tjdw.getOrgTypeId()).get();
+//        return "/".concat(ot.getName()).concat("/").concat(tjdw.getName()).concat("/").concat(sbdw.getName())
+//                        .concat("/科普作品/").concat(works.getId().toString());
+        return "/".concat("科普作品/").concat(Utils.removeSpecialChars(works.getTitle()));
     }
 
     /**
@@ -272,6 +278,7 @@ public class WorksServiceImpl implements WorksService{
         getWorksType(works, map);
         map.put("phone", works.getPhone());
         map.put("poster", works.getPoster());
+        map.put("topic", works.getTopic());
         String orgType = null;
         if (reccAccount.getOrgTypeId() != null) {
             OrgType ot = orgTypeRepository.findById(reccAccount.getOrgTypeId()).get();
@@ -342,17 +349,19 @@ public class WorksServiceImpl implements WorksService{
         Works works = worksRepository.findById(id).get();
         if (works.getReccFormFileUrl() != null){
             File old = new File(works.getReccFormFileUrl());
-            old.deleteOnExit();
+            old.delete();
         }
         //中文文件名在Linux上报错, 这里统一改成reccform
         String[] segs = file.getOriginalFilename().split("\\.");
         String newName = "reccform."+segs[segs.length - 1];
-        Path target = Paths.get(reccFormDirectory + getPersistFilePath(works) + "/" + id + "/" + newName);
+//        Path target = Paths.get(reccFormDirectory + getPersistFilePath(works) + "/" + id + "/" + newName);
+        Path target = Paths.get(fileDestDirectory + getPersistFilePath(works) + "/" + newName);
         //如果该文件已存在, 就修改文件名, 否则会出现重名文件冲突
         int i = 0;
         while(target.toFile() != null && target.toFile().exists()){
             newName = "reccform(" + (++i) + ")."+segs[segs.length - 1];
-            target = Paths.get(reccFormDirectory + getPersistFilePath(works) + "/" + id + "/" + newName);
+//            target = Paths.get(reccFormDirectory + getPersistFilePath(works) + "/" + id + "/" + newName);
+            target = Paths.get(fileDestDirectory + getPersistFilePath(works) + "/" + newName);
         }
         Files.createDirectories(target.getParent());
         Files.createFile(target);
@@ -372,10 +381,12 @@ public class WorksServiceImpl implements WorksService{
         Account postAcc = works.getAccount();
         if (postAcc != null){
             objs[5] = postAcc.getName();
+            objs[16] = postAcc.getPhone();
             for(Account tj: accounts){
                 if (tj.getId().equals(postAcc.getParentAccountId())){
                     objs[6] = tj.getName();
                     objs[14] = tj.getPhone();
+
                     for(OrgType ot : orgTypes){
                         if (ot.getId().equals(tj.getOrgTypeId()))
                             objs[0] = ot.getName();
@@ -391,8 +402,13 @@ public class WorksServiceImpl implements WorksService{
                     objs[1] = "图文类";
                 else if (d.getValue().intValue() < 30)
                     objs[1] = "音频类";
-                else
+                else if (d.getValue().intValue() < 40)
                     objs[1] = "视频类";
+                else if (d.getValue().intValue() < 50)
+                    objs[1] = "图书类";
+                else
+                    objs[1] = "舞台表演类";
+
             }
         }
         objs[3] = works.getTitle();
@@ -409,6 +425,7 @@ public class WorksServiceImpl implements WorksService{
         objs[13] = works.getProjectBrief();
 
         objs[15] = works.getVendor();
+
         return objs;
     }
 
@@ -430,7 +447,7 @@ public class WorksServiceImpl implements WorksService{
         }
         sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, width - 1));
         Cell cell = row.getCell(0);
-        cell.setCellValue("2022年“上海市健康科普推优选树”参评作品推荐汇总表");
+        cell.setCellValue("2024年“上海市健康科普推优选树”参评作品推荐汇总表");
 
         return row;
     }
@@ -454,9 +471,9 @@ public class WorksServiceImpl implements WorksService{
     }
     @Override
     public ResponseEntity<byte[]> exportWorksExcel(String poster, Integer type, Integer tjdw) throws IOException {
-        //                                0        1       2         3      4     5         6         7        8      9        10            11        12     13     14      15
-        String[] headers = new String[]{"机构类型","一级类别","二级类别","标题","作者","申报单位","推荐单位","本地链接", "链接","刊播媒体","刊播版面/栏目","刊播日期","播放量","说明", "手机号", "制作单位"};
-        int [] columnWidth = new int[]{  7500,    3000,     6000,    15000,6000, 13000,    13000,   15000,    18000, 11000,    11000,         5000,   3000,  25000,  6000,    5000};
+        //                                0        1       2         3      4     5         6         7        8      9        10            11        12     13     14              15         16
+        String[] headers = new String[]{"机构类型","一级类别","二级类别","标题","作者","申报单位","推荐单位","本地链接", "链接","刊播媒体","刊播版面/栏目","刊播日期","播放量","说明", "推荐单位手机号", "制作单位", "作者电话"};
+        int [] columnWidth = new int[]{  7500,    3000,     6000,    15000,6000, 13000,    13000,   15000,    18000, 11000,    11000,         5000,   3000,  25000,  6000,           5000,     6000};
         Workbook wb = new HSSFWorkbook();
         Sheet sheet = wb.createSheet("作品");
         Row rowTitle = getTitleRow(sheet, headers.length);
@@ -568,6 +585,7 @@ public class WorksServiceImpl implements WorksService{
         map.put("type3", "（  ）音频类 □专题音频 □广播剧  □有声书   □其他");
         map.put("type4", "（  ）视频类 □单集作品         □系列作品");
         map.put("type5", "           □短视频(≤10分钟)  □长视频(＞10分钟)");
+        map.put("type6", "（  ）舞台表演类 □演讲  □脱口秀   □舞台剧");
         if (works.getType() < 20){
             if (works.getType() == Constants.WORKS_TYPE_TEXT_SCI)
                 map.put("type1", "（✔）图文类 ■科普文章 □漫  画  □海报折页 □其他");
@@ -606,6 +624,13 @@ public class WorksServiceImpl implements WorksService{
             }
         } else if (works.getType() < 50){
             map.put("type2", "（✔）图书类");
+        } else if (works.getType() < 60){
+            if (works.getType() == Constants.WORKS_TYPE_STAGPLAY_SPEECH)
+                map.put("type6", "（✔）舞台表演类 ■演讲 □脱口秀  □舞台剧");
+            if (works.getType() == Constants.WORKS_TYPE_STAGPLAY_TALKSHOW)
+                map.put("type6", "（✔）舞台表演类 □演讲 ■脱口秀  □舞台剧");
+            if (works.getType() == Constants.WORKS_TYPE_STAGPLAY_STAGSHOW)
+                map.put("type6", "（✔）舞台表演类 □演讲 □脱口秀  ■舞台剧");
         }
     }
 }

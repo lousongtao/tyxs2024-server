@@ -282,17 +282,17 @@ public class PopsciMgmtServiceImpl implements PopsciMgmtService{
         PopsciMgmt popsciMgmt = popsciMgmtRepository.findById(id).get();
         if (popsciMgmt.getReccFormFileUrl() != null){
             File old = new File(popsciMgmt.getReccFormFileUrl());
-            old.deleteOnExit();
+            old.delete();
         }
         //中文文件名在Linux上报错, 这里统一改成reccform
         String[] segs = file.getOriginalFilename().split("\\.");
         String newName = "reccform."+segs[segs.length - 1];
-        Path target = Paths.get(reccFormDirectory + getPersistFilePath(popsciMgmt) + "/" + id + "/" + newName);
+        Path target = Paths.get(fileDestDirectory + getPersistFilePath(popsciMgmt) + "/" + newName);
         //如果该文件已存在, 就修改文件名, 否则会出现重名文件冲突
         int i = 0;
         while(target.toFile() != null && target.toFile().exists()){
             newName = "reccform(" + (++i) + ")."+segs[segs.length - 1];
-            target = Paths.get(reccFormDirectory + getPersistFilePath(popsciMgmt) + "/" + id + "/" + newName);
+            target = Paths.get(fileDestDirectory + getPersistFilePath(popsciMgmt) + "/" + newName);
         }
         Files.createDirectories(target.getParent());
         Files.createFile(target);
@@ -325,7 +325,7 @@ public class PopsciMgmtServiceImpl implements PopsciMgmtService{
         }
         sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, width - 1));
         Cell cell = row.getCell(0);
-        cell.setCellValue("2022年“上海市健康科普推优选树”科普管理推荐汇总表");
+        cell.setCellValue("2024年“上海市健康科普推优选树”科普管理推荐汇总表");
 
         return row;
     }
@@ -353,6 +353,7 @@ public class PopsciMgmtServiceImpl implements PopsciMgmtService{
         Account postAcc = mgmt.getAccount();
         if (postAcc != null){
             objs[2] = postAcc.getName();
+            objs[25] = postAcc.getPhone();
             for(Account tj: accounts){
                 if (tj.getId().equals(postAcc.getParentAccountId())){
                     objs[1] = tj.getName();
@@ -403,9 +404,9 @@ public class PopsciMgmtServiceImpl implements PopsciMgmtService{
 
     @Override
     public ResponseEntity<byte[]> exportExcel() throws IOException {
-        //                                0        1          2         3          4         5       6         7        8        9       10         11      12   13     14       15       16     17        18     19     20         21        22                23               24
-        String[] headers = new String[]{"机构类型", "推荐单位", "申报单位", "本地链接", "申报类别","单位名称","通讯地址","联系人","联系部门","手机号码","电子邮箱","姓名", "性别","民族","出生年月","学历","手机号码","工作单位", "职务", "职称", "通讯地址", "电子邮箱", "从事专业/工作领域", "推荐单位联系人", "推荐单位联系电话"};
-        int [] columnWidth = new int[]{  7000,     7000,      7000,     13000,     3000,    8000,     12000,   4000,   6000,     5000,    10000,   5000,    2000, 2000, 5000,    4000,   5000,   10000,    6000,  6000,   13000,    10000,     10000,            10000,           10000};
+        //                                0        1          2         3          4         5       6         7        8        9       10         11      12   13     14       15       16     17        18     19     20         21        22                23               24            25
+        String[] headers = new String[]{"机构类型", "推荐单位", "申报单位", "本地链接", "申报类别","单位名称","通讯地址","联系人","联系部门","手机号码","电子邮箱","姓名", "性别","民族","出生年月","学历","手机号码","工作单位", "职务", "职称", "通讯地址", "电子邮箱", "从事专业/工作领域", "推荐单位联系人", "推荐单位联系电话", "提交人联系电话"};
+        int [] columnWidth = new int[]{  7000,     7000,      7000,     13000,     3000,    8000,     12000,   4000,   6000,     5000,    10000,   5000,    2000, 2000, 5000,    4000,   5000,   10000,    6000,  6000,   13000,    10000,     10000,            10000,           10000,        10000};
         Workbook wb = new HSSFWorkbook();
         Sheet sheet = wb.createSheet("科普管理");
         Row rowTitle = getTitleRow(sheet, headers.length);
@@ -462,12 +463,20 @@ public class PopsciMgmtServiceImpl implements PopsciMgmtService{
                 .body(os.toByteArray());
     }
 
+    /**
+     * 根据2024年的要求, 将每个作品放入到一个文件夹下, 该文件夹下包括作品和推荐表
+     * 需要考虑到某些特殊符号无法生成目录名, 需要做一些转换, 比如把英文符号转化成中文符号
+     * @return
+     */
     private String getPersistFilePath(PopsciMgmt popsciMgmt){
-        Account sbdw = popsciMgmt.getAccount();
-        Account tjdw = accountRepository.findById(sbdw.getParentAccountId()).get();
-        OrgType ot = orgTypeRepository.findById(tjdw.getOrgTypeId()).get();
-        return "/".concat(ot.getName()).concat("/").concat(tjdw.getName()).concat("/").concat(sbdw.getName())
-                .concat("/科普管理/").concat(popsciMgmt.getId().toString());
+//        Account sbdw = popsciMgmt.getAccount();
+//        Account tjdw = accountRepository.findById(sbdw.getParentAccountId()).get();
+//        OrgType ot = orgTypeRepository.findById(tjdw.getOrgTypeId()).get();
+//        return "/".concat(ot.getName()).concat("/").concat(tjdw.getName()).concat("/").concat(sbdw.getName())
+//                .concat("/科普管理/").concat(popsciMgmt.getId().toString());
+        if (popsciMgmt.getApplyType() == Constants.POPSCI_APPLYTYPE_INDIVIDUAL)
+            return "/".concat("科普管理个人/").concat(Utils.removeSpecialChars(popsciMgmt.getName()));
+        else return "/".concat("科普管理机构/").concat(Utils.removeSpecialChars(popsciMgmt.getDeptName()));
     }
 
     /**

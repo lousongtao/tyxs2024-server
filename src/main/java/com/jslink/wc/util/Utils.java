@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Utils {
     //move file, return the dest file name
@@ -90,5 +92,24 @@ public class Utils {
         for (int i = 0; i < Constants.PRINT_RECCTABLE_EXPERIENCE_ROW - experienceList.size(); i++) {
             table.addRow();
         }
+    }
+
+    /**
+     * 根据输入的作品名(或者其他名称), 剔除某些特殊字符, 把有中文字符对应的英文字符做一下转换, 用来生成一个文件目录.
+     * @param name 作品名称, 人物名称, 品牌名称等
+     * @return
+     */
+    public static String removeSpecialChars(String name){
+        name = name.trim().replaceAll("\\\\", "＼")
+                .replaceAll("/", "／")
+                .replaceAll("[*]", "×")
+                .replaceAll("[?]", "？")
+                .replaceAll(":", "：")
+                .replaceAll("\"", "＂")
+                .replaceAll("<", "＜")
+                .replaceAll(">", "＞")
+                .replaceAll("\\.{2,}", ".")//把连续的多个点号, 替换成一个
+                .replaceAll("\\|", "｜");
+        return name;
     }
 }

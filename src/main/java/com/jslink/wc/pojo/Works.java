@@ -23,6 +23,8 @@ public class Works {
     @Column
     private Integer type;
     @Column
+    private String topic;//主题
+    @Column
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
     @Column

@@ -29,6 +29,9 @@ public class Constants {
     public static final int WORKS_TYPE_VIDEO_MULTI_SHORT = 33;//
     public static final int WORKS_TYPE_VIDEO_MULTI_LONG = 34;//
     public static final int WORKS_TYPE_TEXTBOOK = 41;//
+    public static final int WORKS_TYPE_STAGPLAY_SPEECH = 51;// 演讲
+    public static final int WORKS_TYPE_STAGPLAY_TALKSHOW = 52;// 脱口秀
+    public static final int WORKS_TYPE_STAGPLAY_STAGSHOW = 53;// 舞台剧
 
     public static final String DICT_TYPE_RATE = "rate";
 

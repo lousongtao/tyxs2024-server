@@ -366,17 +366,17 @@ public class BrandServiceImpl implements BrandService{
         Brand brand = brandRepository.findById(id).get();
         if (brand.getReccFormFileUrl() != null){
             File old = new File(brand.getReccFormFileUrl());
-            old.deleteOnExit();
+            old.delete();
         }
         //中文文件名在Linux上报错, 这里统一改成reccform
         String[] segs = file.getOriginalFilename().split("\\.");
         String newName = "reccform."+segs[segs.length - 1];
-        Path target = Paths.get(reccFormDirectory + getPersistFilePath(brand) + "/" + id + "/" + newName);
+        Path target = Paths.get(fileDestDirectory + getPersistFilePath(brand) + "/" + newName);
         //如果该文件已存在, 就修改文件名, 否则会出现重名文件冲突
         int i = 0;
         while(target.toFile() != null && target.toFile().exists()){
             newName = "reccform(" + (++i) + ")."+segs[segs.length - 1];
-            target = Paths.get(reccFormDirectory + getPersistFilePath(brand) + "/" + id + "/" + newName);
+            target = Paths.get(fileDestDirectory + getPersistFilePath(brand) + "/" + newName);
         }
         Files.createDirectories(target.getParent());
         Files.createFile(target);
@@ -391,12 +391,18 @@ public class BrandServiceImpl implements BrandService{
         return path;
     }
 
+    /**
+     * 根据2024年的要求, 将每个作品放入到一个文件夹下, 该文件夹下包括作品和推荐表
+     * 需要考虑到某些特殊符号无法生成目录名, 需要做一些转换, 比如把英文符号转化成中文符号
+     * @return
+     */
     private String getPersistFilePath(Brand brand){
-        Account sbdw = brand.getAccount();
-        Account tjdw = accountRepository.findById(sbdw.getParentAccountId()).get();
-        OrgType ot = orgTypeRepository.findById(tjdw.getOrgTypeId()).get();
-        return "/".concat(ot.getName()).concat("/").concat(tjdw.getName()).concat("/").concat(sbdw.getName())
-                .concat("/科普品牌/").concat(brand.getId().toString());
+//        Account sbdw = brand.getAccount();
+//        Account tjdw = accountRepository.findById(sbdw.getParentAccountId()).get();
+//        OrgType ot = orgTypeRepository.findById(tjdw.getOrgTypeId()).get();
+//        return "/".concat(ot.getName()).concat("/").concat(tjdw.getName()).concat("/").concat(sbdw.getName())
+//                .concat("/科普品牌/").concat(brand.getId().toString());
+        return "/".concat("科普品牌/").concat(Utils.removeSpecialChars(brand.getName()));
     }
 
     //首行合并, 并设置特有单元格大小
@@ -417,7 +423,7 @@ public class BrandServiceImpl implements BrandService{
         }
         sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, width - 1));
         Cell cell = row.getCell(0);
-        cell.setCellValue("2022年“上海市健康科普推优选树”科普品牌推荐汇总表");
+        cell.setCellValue("2024年“上海市健康科普推优选树”科普品牌推荐汇总表");
 
         return row;
     }
@@ -445,6 +451,7 @@ public class BrandServiceImpl implements BrandService{
         Account postAcc = brand.getAccount();
         if (postAcc != null){
             objs[2] = postAcc.getName();
+            objs[12] = postAcc.getPhone();
             for(Account tj: accounts){
                 if (tj.getId().equals(postAcc.getParentAccountId())){
                     objs[1] = tj.getName();
@@ -472,9 +479,9 @@ public class BrandServiceImpl implements BrandService{
 
     @Override
     public ResponseEntity<byte[]> exportExcel() throws IOException {
-        //                                0        1          2         3          4         5       6        7         8        9     10           11
-        String[] headers = new String[]{"机构类型", "推荐单位", "申报单位", "本地链接", "品牌名称", "类型", "归属类别","所在单位","联系人","手机", "通讯地址", "电子邮箱"};
-        int [] columnWidth = new int[]{  7000,     7000,      7000,     13000,     8000,     8000,   4000,    8000,     4000,   6000,   12000,   7000};
+        //                                0        1          2         3          4         5       6        7         8        9     10           11      12
+        String[] headers = new String[]{"机构类型", "推荐单位", "申报单位", "本地链接", "品牌名称", "类型", "归属类别","所在单位","联系人","手机", "通讯地址", "电子邮箱", "提交人联系电话"};
+        int [] columnWidth = new int[]{  7000,     7000,      7000,     13000,     8000,     8000,   4000,    8000,     4000,   6000,   12000,   7000,      6000};
         Workbook wb = new HSSFWorkbook();
         Sheet sheet = wb.createSheet("科普品牌");
         Row rowTitle = getTitleRow(sheet, headers.length);
